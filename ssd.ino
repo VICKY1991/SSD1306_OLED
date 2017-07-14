@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include "bmpLUT.h"
 
 /*
 Turns on an LED on for one second, then off for one second, repeatedly.
@@ -110,68 +111,55 @@ void commandSSD1306_i2c(uint8_t command)
 *
 * RETURN : NONE
 ************************************************************************************************************************************************************************************************/
-void dataSSD1306_i2c(uint8_t data[], uint8_t col_start_addr=COL_START_ADDR, uint8_t col_end_addr=COL_END_ADDR, uint8_t page_start_addr=PAGE_START_ADDR, uint8_t page_end_addr=PAGE_END_ADDR)
+void dataSSD1306_i2c(uint8_t data[], uint8_t nbytes)
 {
 	//
-	commandSSD1306_i2c(SET_COL_ADDR);
+	int i;
 	//
-	commandSSD1306_i2c(col_start_addr);
+	for (i = 0; i < nbytes; i++)
+	{
+		// we write one byte at a time and generate a fresh transaction
+		Wire.beginTransmission(0x3C);
+		//
+		Wire.write(0x40); // control byte - data
+		//
+		Wire.write(data[i]);
+		//
+		Wire.endTransmission();
+	}
 	//
-	commandSSD1306_i2c(col_end_addr);
-	//
-	commandSSD1306_i2c(SET_PAGE_ADDR);
-	//
-	commandSSD1306_i2c(page_start_addr);
-	//
-	commandSSD1306_i2c(page_end_addr);
+	// Put some space between every letter
+	Wire.beginTransmission(0x3C);
+	Wire.write(0x40);
+	Wire.write(0x00);
+	Wire.endTransmission();
 	//
 	Wire.beginTransmission(0x3C);
-	//
-	Wire.write(0x40); /// control byte - data
-	//				  //
-	Wire.write(0xC0);
-	//
-	//Wire.endTransmission();
-	//
-
-
-	Wire.write(0x40); /// control byte - data
-					  //				  //
-	Wire.write(0x30);
-	//
-	//Wire.endTransmission();
-
-	Wire.write(0x40); /// control byte - data
-					  //				  //
-	Wire.write(0x1C);
-	//
-	//Wire.endTransmission();
-
-	Wire.write(0x40); /// control byte - data
-					  //				  //
-	Wire.write(0x13);
-	//
-	Wire.write(0x40); /// control byte - data
-					  //				  //
-	Wire.write(0x1C);
-	//
-	Wire.write(0x40); /// control byte - data
-					  //				  //
-	Wire.write(0x30);
-	//
-	Wire.write(0x40); /// control byte - data
-					  //				  //
-	Wire.write(0xC0);
-
+	Wire.write(0x40);
+	Wire.write(0x00);
 	Wire.endTransmission();
 	//delay(100);
 }
 //
 
+// function clears the display by writing a 0x00 to every byte
 void clearSSD1306()
 {
 	//
 	int i;
+	//
+	// set the address pointer to the start of the GDDRAM and then write 0s to all bits
+	commandSSD1306_i2c(SET_COL_ADDR);
+	//
+	commandSSD1306_i2c(COL_START_ADDR);
+	//
+	commandSSD1306_i2c(COL_END_ADDR);
+	//
+	commandSSD1306_i2c(SET_PAGE_ADDR);
+	//
+	commandSSD1306_i2c(PAGE_START_ADDR);
+	//
+	commandSSD1306_i2c(PAGE_END_ADDR);
 	//
 	for (i = 0; i < 1024; i++)
 	{
@@ -187,6 +175,9 @@ void clearSSD1306()
 		delay(1);
 	}
 }
+//
+
+// function does all the required initialisation for the display to work properly
 void initSSD1306_i2c()
 {
 	//
@@ -249,6 +240,245 @@ void initSSD1306_i2c()
 	//Wire.endTransmission();
 
 }
+//
+
+/****************************************************************************************************************************
+
+* AUTHOR : Sambit Mohapatra
+
+*
+
+* DATE : 12/07/2017
+
+*
+
+* DESCP : Function writes a string to the SSD1306 display by first getting the corresponding byte stream for each character
+
+*           of the passed string and then using the ssd_Data() function to write those bytes to the display
+
+*****************************************************************************************************************************/
+
+void ssd_WriteString(char str[], uint8_t col_pos, uint8_t page_pos)
+
+{
+	//
+	uint8_t i;
+	commandSSD1306_i2c(SET_COL_ADDR);
+	//
+	commandSSD1306_i2c(col_pos);
+	//
+	commandSSD1306_i2c(COL_END_ADDR);
+	//
+	commandSSD1306_i2c(SET_PAGE_ADDR);
+	//
+	commandSSD1306_i2c(page_pos);
+	//
+	commandSSD1306_i2c(PAGE_END_ADDR);
+	// get every character
+	for (i = 0; i < strlen(str); i++)
+	{
+		
+		switch (str[i])
+		{
+		case 'A':
+			dataSSD1306_i2c(A, 15); // we have found 'A', so send its byte stream and number of byte
+			break;
+			//
+		case 'B':
+			dataSSD1306_i2c(B, 6);
+			//
+			break;
+			//
+		case 'C':
+			dataSSD1306_i2c(C, 6);
+			//
+			break;
+			//
+		case 'D':
+			dataSSD1306_i2c(D, 7);
+			//
+			break;
+			//
+		case 'E':
+			dataSSD1306_i2c(E, 6);
+			//
+			break;
+			//
+		case 'F':
+			dataSSD1306_i2c(F, 7);
+			//
+			break;
+			//
+		case 'G':
+			dataSSD1306_i2c(G, 6);
+			//
+			break;
+			//
+		case 'H':
+			dataSSD1306_i2c(H, 7);
+			//
+			break;
+			//
+		case 'I':
+			dataSSD1306_i2c(I, 7);
+			//
+			break;
+			//
+		case 'J':
+			dataSSD1306_i2c(J, 7);
+
+			break;
+			//
+		case 'K':
+			dataSSD1306_i2c(K, 6);
+			//
+			break;
+			//
+		case 'L':
+			dataSSD1306_i2c(L, 7);
+			//
+			break;
+			//
+		case 'M':
+
+			dataSSD1306_i2c(M, 9);
+
+			//
+
+			break;
+
+			//
+
+		case 'N':
+
+			dataSSD1306_i2c(N, 8);
+
+			//
+
+			break;
+
+			//
+
+		case 'O':
+
+			dataSSD1306_i2c(O, 9);
+
+			//
+
+			break;
+
+			//
+
+		case 'P':
+
+			dataSSD1306_i2c(P, 6);
+
+			//
+
+			break;
+
+			//
+
+		case 'Q':
+
+			dataSSD1306_i2c(Q, 9);
+
+			//
+
+			break;
+
+
+
+		case 'R':
+
+			dataSSD1306_i2c(R, 5);
+
+			//
+
+			break;
+
+			//
+
+		case 'S':
+
+			dataSSD1306_i2c(S, 7);
+
+			//
+
+			break;
+
+			//
+
+		case 'T':
+
+			dataSSD1306_i2c(T, 7);
+
+			//
+
+			break;
+
+			//
+
+		case 'U':
+
+			dataSSD1306_i2c(U, 9);
+
+			//
+
+			break;
+
+			//
+
+		case 'V':
+
+			dataSSD1306_i2c(V, 15);
+
+			//
+
+			break;
+
+			//
+
+		case 'W':
+
+			dataSSD1306_i2c(W, 11);
+
+			//
+
+			break;
+
+			//
+
+		case 'X':
+
+			dataSSD1306_i2c(X, 8);
+
+			//
+
+			break;
+
+			//
+
+		case 'Y':
+
+			dataSSD1306_i2c(Y, 9);
+			//
+			break;
+			//
+		case 'Z':
+			dataSSD1306_i2c(Z, 8);
+			//
+			break;
+		default:
+			dataSSD1306_i2c(cls, 4);
+			break;
+		}
+
+	}
+
+}
+
+// genaral arduino setup function
 void setup()
 {
 	Serial.begin(9600);
@@ -265,8 +495,13 @@ void setup()
 	//
 	clearSSD1306();
 	//
-	uint8_t data[3] = { 0xC0, 0xFF, 0xA0 };
-	dataSSD1306_i2c(data);
+	ssd_WriteString("HELLO RAGA", 0, 0);
+	//
+	ssd_WriteString("HOW ARE YOU", 5, 2);
+	//
+	//clearSSD1306();
+	//
+	//ssd_WriteString("SA", 0, 0);
 	/// display OFF
 	//commandSSD1306_i2c()
 	//Wire.endTransmission();
