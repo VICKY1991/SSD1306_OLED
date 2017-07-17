@@ -111,7 +111,7 @@ void commandSSD1306_i2c(uint8_t command)
 *
 * RETURN : NONE
 ************************************************************************************************************************************************************************************************/
-void dataSSD1306_i2c(uint8_t data[], uint8_t nbytes)
+void dataSSD1306_i2c(uint8_t data[], uint8_t nbytes, bool wipe=true)
 {
 	//
 	int i;
@@ -126,6 +126,10 @@ void dataSSD1306_i2c(uint8_t data[], uint8_t nbytes)
 		Wire.write(data[i]);
 		//
 		Wire.endTransmission();
+		//
+		// produce a wiping effect for text to appear on the display
+		if (wipe)
+			delayMicroseconds(20000);
 	}
 	//
 	// Put some space between every letter
@@ -172,7 +176,8 @@ void clearSSD1306()
 		//
 		Wire.endTransmission();
 		//
-		delay(1);
+		delayMicroseconds(20000);
+		//delay(1);
 	}
 }
 //
@@ -241,6 +246,28 @@ void initSSD1306_i2c()
 
 }
 //
+/********************************************************************************************************************************
+* AUTHOR : Sambit Mohapatra
+*
+* DATE : 17/07/2017
+*
+* DESCP : Function takes a floating point number and converts into string to be written to the display
+*
+*********************************************************************************************************************************/
+
+void ssd_WriteNum(float number, uint8_t col_pos, uint8_t page_pos)
+{
+	//
+	char strNum[10]; // the number will be 10 characters wide at max
+	//
+	memset(strNum, 0, sizeof(strNum)); // clear the buffer before storing anything
+	//
+	sprintf(strNum, "%.2f", number); // convert to string with 2 characters after decimal
+	//
+	ssd_WriteString(strNum, col_pos, page_pos);
+}
+//
+
 
 /****************************************************************************************************************************
 
@@ -263,6 +290,15 @@ void ssd_WriteString(char str[], uint8_t col_pos, uint8_t page_pos)
 {
 	//
 	uint8_t i;
+	//
+	// for pages 4-7
+	if (page_pos > 3)
+	{
+		commandSSD1306_i2c(0xD3);
+		//
+		commandSSD1306_i2c(0x31);
+	}
+	//
 	commandSSD1306_i2c(SET_COL_ADDR);
 	//
 	commandSSD1306_i2c(col_pos);
@@ -469,6 +505,60 @@ void ssd_WriteString(char str[], uint8_t col_pos, uint8_t page_pos)
 			dataSSD1306_i2c(Z, 8);
 			//
 			break;
+			//
+		case '0':
+			dataSSD1306_i2c(N0, 4);
+			//
+			break;
+			//
+		case '1':
+			dataSSD1306_i2c(N1, 3);
+			//
+			break;
+			//
+		case '2':
+			dataSSD1306_i2c(N2, 4);
+			//
+			break;
+		case '3':
+			dataSSD1306_i2c(N3, 3);
+			//
+			break;
+		case '5':
+			dataSSD1306_i2c(N5, 4);
+			//
+			break;
+		case '4':
+			dataSSD1306_i2c(N4, 4);
+			//
+			break;
+		case '6':
+			dataSSD1306_i2c(N6, 4);
+			//
+			break;
+		case '7':
+			dataSSD1306_i2c(N7, 4);
+			//
+			break;
+		case '8':
+			dataSSD1306_i2c(N8, 4);
+			//
+			break;
+		case '9':
+			dataSSD1306_i2c(N9, 4);
+			//
+			break;
+			//
+			case '\'':
+				dataSSD1306_i2c(deg, 1);
+				//
+				break;
+				//
+			case '%':
+				dataSSD1306_i2c(per, 5);
+				//
+				break;
+				//
 		default:
 			dataSSD1306_i2c(cls, 4);
 			break;
@@ -495,17 +585,13 @@ void setup()
 	//
 	clearSSD1306();
 	//
-	ssd_WriteString("HELLO RAGA", 0, 0);
+	//ssd_WriteString("HELLO RAGA", 0, 0);
 	//
-	ssd_WriteString("HOW ARE YOU", 5, 2);
+	//ssd_WriteString("HUMIDITY", 5, 0);
 	//
+	//ssd_WriteString("70%", 100, 0);
 	//clearSSD1306();
-	//
-	//ssd_WriteString("SA", 0, 0);
-	/// display OFF
-	//commandSSD1306_i2c()
-	//Wire.endTransmission();
-
+	
 }
 
 void loop()
@@ -513,8 +599,17 @@ void loop()
 	Serial.println(sizeof(uint8_t));
 
 	//dataSSD1306_i2c(0xFF);
+	//
+	ssd_WriteString("HUMIDITY", 5, 0);
+	//
+	//ssd_WriteString("70%", 100, 0);
+	//
+	ssd_WriteNum(70.0, 100, 0);
+	//
 	delay(500);              // wait for a second
 	digitalWrite(13, HIGH);
+	
+	//clearSSD1306();
 	//dataSSD1306_i2c(0x00);
 	// set the LED on
 	delay(500);              // wait for a second
