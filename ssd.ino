@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include "bmpLUT.h"
+#include <string.h>
 
 /*
 Turns on an LED on for one second, then off for one second, repeatedly.
@@ -258,13 +259,11 @@ void initSSD1306_i2c()
 void ssd_WriteNum(float number, uint8_t col_pos, uint8_t page_pos)
 {
 	//
-	char strNum[10]; // the number will be 10 characters wide at max
+	String strNum = String(number, 2);
 	//
-	memset(strNum, 0, sizeof(strNum)); // clear the buffer before storing anything
+	Serial.println(strNum);
 	//
-	sprintf(strNum, "%.2f", number); // convert to string with 2 characters after decimal
-	//
-	ssd_WriteString(strNum, col_pos, page_pos);
+	ssd_WriteString(&strNum[0], col_pos, page_pos);
 }
 //
 
@@ -606,10 +605,10 @@ void loop()
 	//
 	ssd_WriteNum(70.0, 100, 0);
 	//
-	delay(500);              // wait for a second
+	delay(1500);              // wait for a second
 	digitalWrite(13, HIGH);
 	
-	//clearSSD1306();
+	clearSSD1306();
 	//dataSSD1306_i2c(0x00);
 	// set the LED on
 	delay(500);              // wait for a second
