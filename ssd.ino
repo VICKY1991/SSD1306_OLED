@@ -112,7 +112,7 @@ void commandSSD1306_i2c(uint8_t command)
 *
 * RETURN : NONE
 ************************************************************************************************************************************************************************************************/
-void dataSSD1306_i2c(uint8_t data[], uint8_t nbytes, bool wipe=true)
+void dataSSD1306_i2c(uint8_t data[], uint8_t nbytes, bool wipe=false)
 {
 	//
 	int i;
@@ -148,7 +148,7 @@ void dataSSD1306_i2c(uint8_t data[], uint8_t nbytes, bool wipe=true)
 //
 
 // function clears the display by writing a 0x00 to every byte
-void clearSSD1306()
+void clearSSD1306(bool wipe=false)
 {
 	//
 	int i;
@@ -177,7 +177,8 @@ void clearSSD1306()
 		//
 		Wire.endTransmission();
 		//
-		delayMicroseconds(20000);
+		if (wipe == true)
+			delayMicroseconds(20000);
 		//delay(1);
 	}
 }
@@ -485,13 +486,9 @@ void ssd_WriteString(char str[], uint8_t col_pos, uint8_t page_pos)
 			//
 
 		case 'X':
-
 			dataSSD1306_i2c(X, 8);
-
 			//
-
 			break;
-
 			//
 
 		case 'Y':
@@ -548,16 +545,21 @@ void ssd_WriteString(char str[], uint8_t col_pos, uint8_t page_pos)
 			//
 			break;
 			//
-			case '\'':
-				dataSSD1306_i2c(deg, 1);
-				//
-				break;
-				//
-			case '%':
-				dataSSD1306_i2c(per, 5);
-				//
-				break;
-				//
+		case '\'':
+			dataSSD1306_i2c(deg, 1);
+			//
+			break;
+			//
+		case '%':
+			dataSSD1306_i2c(per, 5);
+			//
+			break;
+			//
+		case '.':
+			dataSSD1306_i2c(decimalpoint, 1);
+			//
+			break;
+			//
 		default:
 			dataSSD1306_i2c(cls, 4);
 			break;
@@ -603,7 +605,7 @@ void loop()
 	//
 	//ssd_WriteString("70%", 100, 0);
 	//
-	ssd_WriteNum(70.0, 100, 0);
+	ssd_WriteNum(70.8, 100, 0);
 	//
 	delay(1500);              // wait for a second
 	digitalWrite(13, HIGH);
